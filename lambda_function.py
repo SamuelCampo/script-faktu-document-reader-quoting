@@ -10,7 +10,7 @@ GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
 genai.configure(api_key=GEMINI_API_KEY)
 s3_client = boto3.client('s3')
 
-def lambda_handler(event, context):
+def handler(event, context):
     """
     Función principal que se ejecuta en Lambda.
     Ahora espera un parámetro 'path' en el 'event' con la ruta S3 del archivo.
