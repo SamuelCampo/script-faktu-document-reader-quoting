@@ -47,6 +47,8 @@ def handler(event, context):
 
         # 2. LEER EL ARCHIVO DESDE S3 (sin cambios)
         print("Leyendo archivo desde S3...")
+        print(f"Bucket: {bucket_name}")
+        print(f"File key: {file_key}")
         response = s3_client.get_object(Bucket=bucket_name, Key=file_key)
         file_content = response['Body'].read()
         file_size = len(file_content)
