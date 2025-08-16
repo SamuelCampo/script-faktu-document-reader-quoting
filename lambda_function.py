@@ -77,6 +77,104 @@ def procesar_fechas_factura(invoice_date, due_date):
             'fecha_actual': datetime.now().strftime('%Y-%m-%d')
         }
 
+def validar_formato_rut(rut_string):
+    """
+    Valida y formatea RUTs chilenos.
+    Acepta formatos: 12.345.678-9, 12345678-9, 123456789
+    Retorna el RUT formateado o None si es inválido.
+    """
+    if not rut_string:
+        return None
+    
+    try:
+        # Limpiar el RUT de espacios y puntos
+        rut_limpio = str(rut_string).replace('.', '').replace(' ', '').strip()
+        
+        # Verificar que tenga el formato básico
+        if '-' in rut_limpio:
+            # Formato con guión: 12345678-9
+            numero, dv = rut_limpio.split('-')
+        else:
+            # Formato sin guión: 123456789
+            if len(rut_limpio) < 2:
+                return None
+            numero = rut_limpio[:-1]
+            dv = rut_limpio[-1]
+        
+        # Validar que el número sea numérico
+        if not numero.isdigit():
+            return None
+        
+        # Validar longitud del número (7-8 dígitos)
+        if len(numero) < 7 or len(numero) > 8:
+            return None
+        
+        # Validar que el dígito verificador sea alfanumérico
+        if not (dv.isdigit() or dv.upper() == 'K'):
+            return None
+        
+        # Formatear como 12.345.678-9
+        numero_int = int(numero)
+        if numero_int < 1000000:  # Menos de 7 dígitos
+            return None
+            
+        # Agregar puntos cada 3 dígitos desde la derecha
+        numero_str = str(numero_int)
+        numero_formateado = ''
+        for i, digito in enumerate(reversed(numero_str)):
+            if i > 0 and i % 3 == 0:
+                numero_formateado = '.' + numero_formateado
+            numero_formateado = digito + numero_formateado
+        
+        return f"{numero_formateado}-{dv.upper()}"
+        
+    except Exception as e:
+        print(f"Error validando RUT '{rut_string}': {str(e)}")
+        return None
+
+def procesar_datos_factura(datos_extraidos):
+    """
+    Procesa y valida los datos extraídos de la factura.
+    - Valida formato de RUTs
+    - Asegura que los campos estén presentes
+    """
+    try:
+        # Validar RUTs
+        supplier_rut = validar_formato_rut(datos_extraidos.get('supplier_rut'))
+        customer_rut = validar_formato_rut(datos_extraidos.get('customer_rut'))
+        
+        # Log de validación de RUTs
+        if supplier_rut:
+            print(f"RUT del proveedor validado: {supplier_rut}")
+        else:
+            print("ADVERTENCIA: RUT del proveedor inválido o no encontrado")
+            
+        if customer_rut:
+            print(f"RUT del cliente validado: {customer_rut}")
+        else:
+            print("ADVERTENCIA: RUT del cliente inválido o no encontrado")
+        
+        # Asegurar que todos los campos estén presentes
+        datos_procesados = {
+            'invoice_date': datos_extraidos.get('invoice_date'),
+            'due_date': datos_extraidos.get('due_date'),
+            'total_amount': datos_extraidos.get('total_amount', 0.0),
+            'invoice_number': datos_extraidos.get('invoice_number'),
+            'currency': datos_extraidos.get('currency'),
+            'supplier_name': datos_extraidos.get('supplier_name'),
+            'supplier_rut': supplier_rut,
+            'supplier_address': datos_extraidos.get('supplier_address'),
+            'customer_name': datos_extraidos.get('customer_name'),
+            'customer_rut': customer_rut,
+            'customer_address': datos_extraidos.get('customer_address')
+        }
+        
+        return datos_procesados
+        
+    except Exception as e:
+        print(f"Error procesando datos de la factura: {str(e)}")
+        return datos_extraidos
+
 def handler(event, context):
     """
     Función principal que se ejecuta en Lambda.
@@ -158,14 +256,25 @@ def handler(event, context):
         print("Configurando modelo Gemini...")
         model = genai.GenerativeModel('gemini-1.5-flash')
         prompt = """
-        Eres un asistente experto en analizar facturas.
+        Eres un asistente experto en analizar facturas chilenas.
         Por favor, analiza el siguiente documento y extrae la siguiente información:
+        
+        INFORMACIÓN BÁSICA:
         1.  Fecha de Emisión (invoice_date)
         2.  Fecha de Vencimiento (due_date) - si no está especificada, déjala como null
         3.  Monto Total (total_amount)
         4.  Número de Factura (invoice_number) - si está disponible
-        5.  Proveedor/Cliente (supplier_name) - si está disponible
-        6.  Moneda (currency) - si está disponible
+        5.  Moneda (currency) - si está disponible
+        
+        INFORMACIÓN DEL PROVEEDOR:
+        6.  Nombre del Proveedor (supplier_name) - empresa que emite la factura
+        7.  RUT del Proveedor (supplier_rut) - número de identificación fiscal del proveedor
+        8.  Dirección del Proveedor (supplier_address) - si está disponible
+        
+        INFORMACIÓN DEL CLIENTE:
+        9.  Nombre del Cliente (customer_name) - empresa/persona a quien se emite la factura
+        10. RUT del Cliente (customer_rut) - número de identificación fiscal del cliente
+        11. Dirección del Cliente (customer_address) - si está disponible
 
         Quiero que me devuelvas la información únicamente en formato JSON.
         El JSON debe tener la siguiente estructura: 
@@ -174,15 +283,22 @@ def handler(event, context):
             "due_date": "YYYY-MM-DD", 
             "total_amount": 0.00,
             "invoice_number": "string o null",
+            "currency": "string o null",
             "supplier_name": "string o null",
-            "currency": "string o null"
+            "supplier_rut": "string o null",
+            "supplier_address": "string o null",
+            "customer_name": "string o null",
+            "customer_rut": "string o null",
+            "customer_address": "string o null"
         }
         
         - El monto total debe ser un número, sin símbolos de moneda.
         - Las fechas deben estar en formato AAAA-MM-DD.
+        - Los RUTs deben estar en formato estándar chileno (ej: 12.345.678-9 o 12345678-9).
         - Si no encuentras alguna de las fechas, usa null como valor.
         - Si no encuentras el monto, usa 0.0 como valor.
         - Si no encuentras algún campo opcional, usa null como valor.
+        - En Chile, el proveedor es quien EMITE la factura y el cliente es quien LA RECIBE.
         """
         invoice_file = {'mime_type': mime_type, 'data': file_content}
         
@@ -206,8 +322,13 @@ def handler(event, context):
                         'due_date': None,
                         'total_amount': 0.0,
                         'invoice_number': None,
-                        'supplier_name': None,
                         'currency': None,
+                        'supplier_name': None,
+                        'supplier_rut': None,
+                        'supplier_address': None,
+                        'customer_name': None,
+                        'customer_rut': None,
+                        'customer_address': None,
                         'dias_mora': 0,
                         'fecha_actual': fecha_actual.strftime('%Y-%m-%d')
                     },
@@ -222,16 +343,21 @@ def handler(event, context):
         extracted_data = json.loads(cleaned_json_text)
         print(f"Datos extraídos y formateados: {json.dumps(extracted_data, indent=2)}")
 
-        # 5. PROCESAR FECHAS Y CALCULAR DÍAS DE MORA
+        # 5. VALIDAR Y PROCESAR DATOS DE LA FACTURA
+        print("Validando y procesando datos de la factura...")
+        datos_validados = procesar_datos_factura(extracted_data)
+        print(f"Datos validados: {json.dumps(datos_validados, indent=2)}")
+
+        # 6. PROCESAR FECHAS Y CALCULAR DÍAS DE MORA
         print("Procesando fechas y calculando días de mora...")
         fechas_procesadas = procesar_fechas_factura(
-            extracted_data.get('invoice_date'),
-            extracted_data.get('due_date')
+            datos_validados.get('invoice_date'),
+            datos_validados.get('due_date')
         )
         
-        # Combinar datos extraídos con fechas procesadas
+        # Combinar datos validados con fechas procesadas
         resultado_final = {
-            **extracted_data,
+            **datos_validados,
             'invoice_date': fechas_procesadas['invoice_date'],
             'due_date': fechas_procesadas['due_date'],
             'dias_mora': fechas_procesadas['dias_mora'],
@@ -240,7 +366,7 @@ def handler(event, context):
         
         print(f"Resultado final procesado: {json.dumps(resultado_final, indent=2)}")
 
-        # 6. DEVOLVER UNA RESPUESTA EXITOSA (sin cambios)
+        # 7. DEVOLVER UNA RESPUESTA EXITOSA (sin cambios)
         total_time = time.time() - start_time
         print(f"Procesamiento completado en {total_time:.2f} segundos")
         return {
