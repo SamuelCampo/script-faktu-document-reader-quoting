@@ -6,6 +6,7 @@ import google.generativeai as genai
 from urllib.parse import urlparse
 import time
 from datetime import datetime, timedelta
+import requests
 
 # --- CONFIGURACIÓN INICIAL (sin cambios) ---
 GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
