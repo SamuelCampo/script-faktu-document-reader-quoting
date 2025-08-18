@@ -189,6 +189,7 @@ def handler(event, context):
 
         # 1. OBTENER LA RUTA DEL ARCHIVO DESDE EL PARÁMETRO 'path'
         s3_path = event.get('path')
+        quoting_batch_id = event.get('quoting_batch_id')
         if not s3_path:
             raise ValueError("Error: El parámetro 'path' no se encontró en el evento.")
         
@@ -330,7 +331,8 @@ def handler(event, context):
                         'customer_rut': None,
                         'customer_address': None,
                         'dias_mora': 0,
-                        'fecha_actual': fecha_actual.strftime('%Y-%m-%d')
+                        'fecha_actual': fecha_actual.strftime('%Y-%m-%d'),
+                        'quoting_batch_id': quoting_batch_id
                     },
                     'gemini_error': str(gemini_error)
                 })
@@ -361,7 +363,8 @@ def handler(event, context):
             'invoice_date': fechas_procesadas['invoice_date'],
             'due_date': fechas_procesadas['due_date'],
             'dias_mora': fechas_procesadas['dias_mora'],
-            'fecha_actual': fechas_procesadas['fecha_actual']
+            'fecha_actual': fechas_procesadas['fecha_actual'],
+            'quoting_batch_id': quoting_batch_id
         }
         
         print(f"Resultado final procesado: {json.dumps(resultado_final, indent=2)}")
