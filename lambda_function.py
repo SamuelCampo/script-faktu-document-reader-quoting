@@ -375,7 +375,9 @@ def handler(event, context):
         webhook_url = os.environ.get('WEBHOOK_URL')
         if webhook_url:
             try:
-                response = requests.post(webhook_url, json=resultado_final)
+                headers = {'Content-Type': 'application/json'}
+                response = requests.post(webhook_url, json=resultado_final, headers=headers)
+                print(f"Webhook response status: {response.status_code}, body: {response.text}")
                 response.raise_for_status()
                 print(f"Datos enviados al webhook exitosamente: {response.text}")
             except requests.RequestException as e:
