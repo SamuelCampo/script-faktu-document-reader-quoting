@@ -369,6 +369,17 @@ def handler(event, context):
         
         print(f"Resultado final procesado: {json.dumps(resultado_final, indent=2)}")
 
+        # vamos a enviar un esta data por post a una url que viene de enviroment que esta esperando un webhook
+
+        webhook_url = os.environ.get('WEBHOOK_URL')
+        if webhook_url:
+            try:
+                response = requests.post(webhook_url, json=resultado_final)
+                response.raise_for_status()
+                print(f"Datos enviados al webhook exitosamente: {response.text}")
+            except requests.RequestException as e:
+                print(f"Error al enviar datos al webhook: {str(e)}")
+
         # 7. DEVOLVER UNA RESPUESTA EXITOSA (sin cambios)
         total_time = time.time() - start_time
         print(f"Procesamiento completado en {total_time:.2f} segundos")
