@@ -366,7 +366,8 @@ def handler(event, context):
             'due_date': fechas_procesadas['due_date'],
             'dias_mora': fechas_procesadas['dias_mora'],
             'fecha_actual': fechas_procesadas['fecha_actual'],
-            'quoting_batch_id': quoting_batch_id
+            'quoting_batch_id': quoting_batch_id,
+            'path_document': file_key
         }
         
         print(f"Resultado final procesado: {json.dumps(resultado_final, indent=2)}")
