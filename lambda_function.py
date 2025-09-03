@@ -333,7 +333,8 @@ def handler(event, context):
                         'customer_address': None,
                         'dias_mora': 0,
                         'fecha_actual': fecha_actual.strftime('%Y-%m-%d'),
-                        'quoting_batch_id': quoting_batch_id
+                        'quoting_batch_id': quoting_batch_id,
+                        'path_document': file_key
                     },
                     'gemini_error': str(gemini_error)
                 })
