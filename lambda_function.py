@@ -256,7 +256,7 @@ def handler(event, context):
 
         # 3. PREPARAR Y ENVIAR LA SOLICITUD A GEMINI (sin cambios)
         print("Configurando modelo Gemini...")
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        model = genai.GenerativeModel('gemini-2.5-flash')
         prompt = """
         Eres un asistente experto en analizar facturas chilenas.
         Por favor, analiza el siguiente documento y extrae la siguiente información:
