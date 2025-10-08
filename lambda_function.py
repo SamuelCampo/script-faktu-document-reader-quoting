@@ -165,9 +165,13 @@ def procesar_datos_factura(datos_extraidos):
             'supplier_name': datos_extraidos.get('supplier_name'),
             'supplier_rut': supplier_rut,
             'supplier_address': datos_extraidos.get('supplier_address'),
+            'supplier_giro': datos_extraidos.get('supplier_giro'),
             'customer_name': datos_extraidos.get('customer_name'),
             'customer_rut': customer_rut,
-            'customer_address': datos_extraidos.get('customer_address')
+            'customer_address': datos_extraidos.get('customer_address'),
+            'customer_giro': datos_extraidos.get('customer_giro'),
+            'customer_comuna': datos_extraidos.get('customer_comuna'),
+            'customer_ciudad': datos_extraidos.get('customer_ciudad')
         }
         
         return datos_procesados
