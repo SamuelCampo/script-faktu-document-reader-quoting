@@ -281,6 +281,9 @@ def handler(event, context):
         9.  Nombre del Cliente (customer_name) - empresa/persona a quien se emite la factura
         10. RUT del Cliente (customer_rut) - número de identificación fiscal del cliente
         11. Dirección del Cliente (customer_address) - si está disponible
+        12. Giro del Cliente (customer_giro) - si está disponible
+        13. Comuna del Cliente (customer_comuna) - si está disponible
+        14. Ciudad del Cliente (customer_ciudad) - si está disponible
 
         Quiero que me devuelvas la información únicamente en formato JSON.
         El JSON debe tener la siguiente estructura: 
@@ -295,7 +298,10 @@ def handler(event, context):
             "supplier_address": "string o null",
             "customer_name": "string o null",
             "customer_rut": "string o null",
-            "customer_address": "string o null"
+            "customer_address": "string o null",
+            "customer_giro": "string o null",
+            "customer_comuna": "string o null",
+            "customer_ciudad": "string o null"
         }
         
         - El monto total debe ser un número, sin símbolos de moneda.
@@ -335,6 +341,9 @@ def handler(event, context):
                         'customer_name': None,
                         'customer_rut': None,
                         'customer_address': None,
+                        'customer_giro': None,
+                        'customer_comuna': None,
+                        'customer_ciudad': None,
                         'dias_mora': 0,
                         'fecha_actual': fecha_actual.strftime('%Y-%m-%d'),
                         'quoting_batch_id': quoting_batch_id,
