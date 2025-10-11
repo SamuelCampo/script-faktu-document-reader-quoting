@@ -392,6 +392,7 @@ def handler(event, context):
             webhook_url =  os.environ.get('WEBHOOK_URL_DEV')
         else:
             webhook_url =  os.environ.get('WEBHOOK_URL')
+        print(f"Enviando datos al webhook: {webhook_url}")
         if webhook_url:
             try:
                 headers = {'Content-Type': 'application/json'}
