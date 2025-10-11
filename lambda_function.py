@@ -195,6 +195,7 @@ def handler(event, context):
         # 1. OBTENER LA RUTA DEL ARCHIVO DESDE EL PARÁMETRO 'path'
         s3_path = event.get('path')
         quoting_batch_id = event.get('quoting_batch_id')
+        environment = event.get('environment', 'production')
         if not s3_path:
             raise ValueError("Error: El parámetro 'path' no se encontró en el evento.")
         
@@ -387,7 +388,10 @@ def handler(event, context):
 
         # vamos a enviar un esta data por post a una url que viene de enviroment que esta esperando un webhook
 
-        webhook_url = os.environ.get('WEBHOOK_URL')
+        if environment == 'development':
+            webhook_url =  os.environ.get('WEBHOOK_URL_DEV')
+        else:
+            webhook_url =  os.environ.get('WEBHOOK_URL')
         if webhook_url:
             try:
                 headers = {'Content-Type': 'application/json'}
