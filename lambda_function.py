@@ -396,12 +396,30 @@ def handler(event, context):
         if webhook_url:
             try:
                 headers = {'Content-Type': 'application/json'}
-                response = requests.post(webhook_url, json=resultado_final, headers=headers)
+                # Agregar timeout para evitar que se quede colgado
+                # timeout=(connect_timeout, read_timeout) en segundos
+                timeout_config = (10, 30)  # 10 segundos para conectar, 30 segundos para recibir respuesta
+                print(f"Enviando POST con timeout: {timeout_config[0]}s conexión, {timeout_config[1]}s lectura")
+                
+                response = requests.post(
+                    webhook_url, 
+                    json=resultado_final, 
+                    headers=headers,
+                    timeout=timeout_config
+                )
                 print(f"Webhook response status: {response.status_code}, body: {response.text}")
                 response.raise_for_status()
                 print(f"Datos enviados al webhook exitosamente: {response.text}")
+            except requests.Timeout as e:
+                print(f"TIMEOUT al enviar datos al webhook (se agotó el tiempo de espera): {str(e)}")
+                print(f"El servidor en {webhook_url} no respondió en el tiempo esperado. Continuando con el procesamiento...")
+            except requests.ConnectionError as e:
+                print(f"ERROR DE CONEXIÓN al enviar datos al webhook (no se pudo conectar al servidor): {str(e)}")
+                print(f"Verifica que el servidor en {webhook_url} esté corriendo y accesible desde el contenedor Docker.")
+                print(f"Si estás usando host.docker.internal, asegúrate de que Docker tenga permisos de red.")
             except requests.RequestException as e:
                 print(f"Error al enviar datos al webhook: {str(e)}")
+                print(f"Tipo de error: {type(e).__name__}")
 
         # 7. DEVOLVER UNA RESPUESTA EXITOSA (sin cambios)
         total_time = time.time() - start_time
