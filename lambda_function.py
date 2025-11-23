@@ -166,12 +166,16 @@ def procesar_datos_factura(datos_extraidos):
             'supplier_rut': supplier_rut,
             'supplier_address': datos_extraidos.get('supplier_address'),
             'supplier_giro': datos_extraidos.get('supplier_giro'),
+            'supplier_ciudad': datos_extraidos.get('supplier_ciudad'),
+            'supplier_comuna': datos_extraidos.get('supplier_comuna'),
             'customer_name': datos_extraidos.get('customer_name'),
             'customer_rut': customer_rut,
             'customer_address': datos_extraidos.get('customer_address'),
             'customer_giro': datos_extraidos.get('customer_giro'),
             'customer_comuna': datos_extraidos.get('customer_comuna'),
-            'customer_ciudad': datos_extraidos.get('customer_ciudad')
+            'customer_ciudad': datos_extraidos.get('customer_ciudad'),
+            'purchase_order': datos_extraidos.get('purchase_order'),
+            'reference_folio': datos_extraidos.get('reference_folio')
         }
         
         return datos_procesados
@@ -277,14 +281,21 @@ def handler(event, context):
         6.  Nombre del Proveedor (supplier_name) - empresa que emite la factura
         7.  RUT del Proveedor (supplier_rut) - número de identificación fiscal del proveedor
         8.  Dirección del Proveedor (supplier_address) - si está disponible
+        9.  Giro del Proveedor (supplier_giro) - si está disponible
+        10. Ciudad del Proveedor (supplier_ciudad) - si está disponible
+        11. Comuna del Proveedor (supplier_comuna) - si está disponible
         
         INFORMACIÓN DEL CLIENTE:
-        9.  Nombre del Cliente (customer_name) - empresa/persona a quien se emite la factura
-        10. RUT del Cliente (customer_rut) - número de identificación fiscal del cliente
-        11. Dirección del Cliente (customer_address) - si está disponible
-        12. Giro del Cliente (customer_giro) - si está disponible
-        13. Comuna del Cliente (customer_comuna) - si está disponible
-        14. Ciudad del Cliente (customer_ciudad) - si está disponible
+        12. Nombre del Cliente (customer_name) - empresa/persona a quien se emite la factura
+        12. RUT del Cliente (customer_rut) - número de identificación fiscal del cliente
+        13. Dirección del Cliente (customer_address) - si está disponible
+        14. Giro del Cliente (customer_giro) - si está disponible
+        15. Comuna del Cliente (customer_comuna) - si está disponible
+        16. Ciudad del Cliente (customer_ciudad) - si está disponible
+
+        OTROS DATOS:
+        17. Orden de Compra (purchase_order) - si está disponible
+        18. Folio de la referencia (reference_folio) - si está disponible
 
         Quiero que me devuelvas la información únicamente en formato JSON.
         El JSON debe tener la siguiente estructura: 
@@ -297,12 +308,17 @@ def handler(event, context):
             "supplier_name": "string o null",
             "supplier_rut": "string o null",
             "supplier_address": "string o null",
+            "supplier_giro": "string o null",
+            "supplier_ciudad": "string o null",
+            "supplier_comuna": "string o null",
             "customer_name": "string o null",
             "customer_rut": "string o null",
             "customer_address": "string o null",
             "customer_giro": "string o null",
             "customer_comuna": "string o null",
-            "customer_ciudad": "string o null"
+            "customer_ciudad": "string o null",
+            "purchase_order": "string o null",
+            "reference_folio": "string o null"
         }
         
         - El monto total debe ser un número, sin símbolos de moneda.
@@ -339,12 +355,17 @@ def handler(event, context):
                         'supplier_name': None,
                         'supplier_rut': None,
                         'supplier_address': None,
+                        'supplier_giro': None,
+                        'supplier_ciudad': None,
+                        'supplier_comuna': None,
                         'customer_name': None,
                         'customer_rut': None,
                         'customer_address': None,
                         'customer_giro': None,
                         'customer_comuna': None,
                         'customer_ciudad': None,
+                        'purchase_order': None,
+                        'reference_folio': None,
                         'dias_mora': 0,
                         'fecha_actual': fecha_actual.strftime('%Y-%m-%d'),
                         'quoting_batch_id': quoting_batch_id,
