@@ -168,6 +168,8 @@ def procesar_datos_factura(datos_extraidos):
             'supplier_giro': datos_extraidos.get('supplier_giro'),
             'supplier_ciudad': datos_extraidos.get('supplier_ciudad'),
             'supplier_comuna': datos_extraidos.get('supplier_comuna'),
+            'supplier_email': datos_extraidos.get('supplier_email'),
+            'supplier_phone': datos_extraidos.get('supplier_phone'),
             'customer_name': datos_extraidos.get('customer_name'),
             'customer_rut': customer_rut,
             'customer_address': datos_extraidos.get('customer_address'),
@@ -284,18 +286,20 @@ def handler(event, context):
         9.  Giro del Proveedor (supplier_giro) - si está disponible
         10. Ciudad del Proveedor (supplier_ciudad) - si está disponible
         11. Comuna del Proveedor (supplier_comuna) - si está disponible
+        12. Email del Proveedor (supplier_email) - si está disponible
+        13. Teléfono del Proveedor (supplier_phone) - si está disponible
         
         INFORMACIÓN DEL CLIENTE:
-        12. Nombre del Cliente (customer_name) - empresa/persona a quien se emite la factura
-        12. RUT del Cliente (customer_rut) - número de identificación fiscal del cliente
-        13. Dirección del Cliente (customer_address) - si está disponible
-        14. Giro del Cliente (customer_giro) - si está disponible
-        15. Comuna del Cliente (customer_comuna) - si está disponible
-        16. Ciudad del Cliente (customer_ciudad) - si está disponible
+        14. Nombre del Cliente (customer_name) - empresa/persona a quien se emite la factura
+        15. RUT del Cliente (customer_rut) - número de identificación fiscal del cliente
+        16. Dirección del Cliente (customer_address) - si está disponible
+        17. Giro del Cliente (customer_giro) - si está disponible
+        18. Comuna del Cliente (customer_comuna) - si está disponible
+        19. Ciudad del Cliente (customer_ciudad) - si está disponible
 
         OTROS DATOS:
-        17. Orden de Compra (purchase_order) - si está disponible
-        18. Folio de la referencia (reference_folio) - si está disponible
+        20. Orden de Compra (purchase_order) - si está disponible
+        21. Folio de la referencia (reference_folio) - si está disponible
 
         Quiero que me devuelvas la información únicamente en formato JSON.
         El JSON debe tener la siguiente estructura: 
@@ -311,6 +315,8 @@ def handler(event, context):
             "supplier_giro": "string o null",
             "supplier_ciudad": "string o null",
             "supplier_comuna": "string o null",
+            "supplier_email": "string o null",
+            "supplier_phone": "string o null",
             "customer_name": "string o null",
             "customer_rut": "string o null",
             "customer_address": "string o null",
@@ -358,6 +364,8 @@ def handler(event, context):
                         'supplier_giro': None,
                         'supplier_ciudad': None,
                         'supplier_comuna': None,
+                        'supplier_email': None,
+                        'supplier_phone': None,
                         'customer_name': None,
                         'customer_rut': None,
                         'customer_address': None,
