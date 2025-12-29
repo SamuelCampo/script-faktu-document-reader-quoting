@@ -78,6 +78,13 @@ def procesar_fechas_factura(invoice_date, due_date):
             'fecha_actual': datetime.now().strftime('%Y-%m-%d')
         }
 
+
+def sendNotificationProcessing(status, userId):
+    requests.get(
+        'https://staging.faktu.net/notification/process/reading/{status}/{userId}', 
+    )
+    
+
 def validar_formato_rut(rut_string):
     """
     Valida y formatea RUTs chilenos.
@@ -238,6 +245,7 @@ def handler(event, context):
         
         # Leer el archivo con timeout
         try:
+            sendNotificationProcessing(2, userId)
             print("Iniciando descarga del archivo...")
             response = s3_client.get_object(Bucket=bucket_name, Key=file_key)
             print("Archivo descargado exitosamente desde S3")
@@ -439,6 +447,7 @@ def handler(event, context):
                 print(f"Webhook response status: {response.status_code}, body: {response.text}")
                 response.raise_for_status()
                 print(f"Datos enviados al webhook exitosamente: {response.text}")
+                sendNotificationProcessing(3, userId)
             except requests.Timeout as e:
                 print(f"TIMEOUT al enviar datos al webhook (se agotó el tiempo de espera): {str(e)}")
                 print(f"El servidor en {webhook_url} no respondió en el tiempo esperado. Continuando con el procesamiento...")
@@ -449,6 +458,7 @@ def handler(event, context):
             except requests.RequestException as e:
                 print(f"Error al enviar datos al webhook: {str(e)}")
                 print(f"Tipo de error: {type(e).__name__}")
+                sendNotificationProcessing(4, userId)
 
         # 7. DEVOLVER UNA RESPUESTA EXITOSA (sin cambios)
         total_time = time.time() - start_time
