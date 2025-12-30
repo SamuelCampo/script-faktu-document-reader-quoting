@@ -209,6 +209,8 @@ def handler(event, context):
         s3_path = event.get('path')
         quoting_batch_id = event.get('quoting_batch_id')
         environment = event.get('environment', 'production')
+        userId = event.get('userId')
+        
         if not s3_path:
             raise ValueError("Error: El parámetro 'path' no se encontró en el evento.")
         
