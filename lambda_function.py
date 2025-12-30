@@ -8,6 +8,9 @@ import time
 from datetime import datetime, timedelta
 import requests
 
+# Validar si existe url_notification globalmente
+url_notification = None
+
 # --- CONFIGURACIÓN INICIAL (sin cambios) ---
 GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
 genai.configure(api_key=GEMINI_API_KEY)
@@ -82,9 +85,18 @@ def procesar_fechas_factura(invoice_date, due_date):
 def sendNotificationProcessing(status, userId):
     print(f"Enviando notificación de estado {status} para el usuario {userId}")
     global url_notification
-    requests.get(
-        f"{url_notification}/notification/process/reading/{status}/{userId}", 
-    )
+    
+    if not url_notification:
+        print("ADVERTENCIA: url_notification no está definida o es nula. Omitiendo notificación.")
+        return
+
+    try:
+        requests.get(
+            f"{url_notification}/notification/process/reading/{status}/{userId}", 
+            timeout=5 # Agregamos timeout por seguridad
+        )
+    except Exception as e:
+        print(f"Error al enviar notificación: {str(e)}")
     
 
 def validar_formato_rut(rut_string):
@@ -214,6 +226,7 @@ def handler(event, context):
         userId = event.get('userId')
         global url_notification
         url_notification = event.get('URL_PROD') if environment == 'production' else event.get('URL_DEV')
+        print(f"URL Notification configurada: {url_notification} (Ambiente: {environment})")
         
         
         
