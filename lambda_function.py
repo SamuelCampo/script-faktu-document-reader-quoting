@@ -81,6 +81,7 @@ def procesar_fechas_factura(invoice_date, due_date):
 
 def sendNotificationProcessing(status, userId):
     print(f"Enviando notificación de estado {status} para el usuario {userId}")
+    global url_notification
     requests.get(
         f"{url_notification}/notification/process/reading/{status}/{userId}", 
     )
@@ -212,7 +213,7 @@ def handler(event, context):
         environment = event.get('environment', 'production')
         userId = event.get('userId')
         global url_notification
-        url_notification = event.get('WEBHOOK_URL') if environment == 'production' else event.get('WEBHOOK_URL_DEV')
+        url_notification = event.get('URL_PROD') if environment == 'production' else event.get('URL_DEV')
         
         
         
