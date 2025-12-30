@@ -225,7 +225,7 @@ def handler(event, context):
         environment = event.get('environment', 'production')
         userId = event.get('userId')
         global url_notification
-        url_notification = event.get('URL_PROD') if environment == 'production' else event.get('URL_DEV')
+        url_notification = os.environ.get('URL_PROD') if environment == 'production' else os.environ.get('URL_DEV')
         print(f"URL Notification configurada: {url_notification} (Ambiente: {environment})")
         
         
