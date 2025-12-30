@@ -80,8 +80,11 @@ def procesar_fechas_factura(invoice_date, due_date):
 
 
 def sendNotificationProcessing(status, userId):
+    environment = event.get('environment', 'production')
+    url_notification = event.get('WEBHOOK_URL') if environment == 'production' else event.get('WEBHOOK_URL_DEV')
+    print(f"Enviando notificación de estado {status} para el usuario {userId}")
     requests.get(
-        'https://staging.faktu.net/notification/process/reading/{status}/{userId}', 
+        f"{url_notification}/notification/process/reading/{status}/{userId}", 
     )
     
 
@@ -210,6 +213,7 @@ def handler(event, context):
         quoting_batch_id = event.get('quoting_batch_id')
         environment = event.get('environment', 'production')
         userId = event.get('userId')
+        
         
         if not s3_path:
             raise ValueError("Error: El parámetro 'path' no se encontró en el evento.")
