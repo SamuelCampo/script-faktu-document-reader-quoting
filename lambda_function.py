@@ -211,6 +211,7 @@ def handler(event, context):
         quoting_batch_id = event.get('quoting_batch_id')
         environment = event.get('environment', 'production')
         userId = event.get('userId')
+        global url_notification
         url_notification = event.get('WEBHOOK_URL') if environment == 'production' else event.get('WEBHOOK_URL_DEV')
         
         
