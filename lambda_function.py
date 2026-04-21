@@ -262,6 +262,7 @@ def handler(event, context):
             print("Archivo encontrado en S3")
         except Exception as head_error:
             print(f"Error al verificar archivo: {str(head_error)}")
+            sendNotificationProcessing(4, userId)
             raise ValueError(f"El archivo {file_key} no existe en el bucket {bucket_name} o no tienes permisos para accederlo")
         
         # Leer el archivo con timeout
@@ -497,6 +498,7 @@ def handler(event, context):
         # GESTIÓN DE ERRORES (sin cambios)
         total_time = time.time() - start_time
         print(f"Ha ocurrido un error después de {total_time:.2f} segundos: {str(e)}")
+        sendNotificationProcessing(4, userId)
         return {
             'statusCode': 500,
             'body': json.dumps({
