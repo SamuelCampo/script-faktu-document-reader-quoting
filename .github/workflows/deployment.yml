@@ -51,40 +51,26 @@ jobs:
           # Build a docker container and
           # push it to ECR so that it can
           # be deployed to ECS.
-          docker build -t $ECR_REGISTRY/${{ vars.ECR_REPOSITORY_NAME }}:$IMAGE_TAG .
-          docker push $ECR_REGISTRY/${{ vars.ECR_REPOSITORY_NAME }}:$IMAGE_TAG
+          docker build -t $ECR_REGISTRY/${{ vars.ECR_REPOSITORY_NAME }}-prod:$IMAGE_TAG .
+          docker build -t $ECR_REGISTRY/${{ vars.ECR_REPOSITORY_NAME }}-prod:latest .
+          docker push $ECR_REGISTRY/${{ vars.ECR_REPOSITORY_NAME }}-prod:$IMAGE_TAG
+          docker push $ECR_REGISTRY/${{ vars.ECR_REPOSITORY_NAME }}-prod:latest
 
           # Get the image digest for Lambda
-          IMAGE_DIGEST=$(docker inspect $ECR_REGISTRY/${{ vars.ECR_REPOSITORY_NAME }}:$IMAGE_TAG --format='{{.RepoDigests}}' | sed 's/\[//g' | sed 's/\]//g' | cut -d'@' -f2)
-          echo "image_uri=$ECR_REGISTRY/${{ vars.ECR_REPOSITORY_NAME }}@$IMAGE_DIGEST" >> $GITHUB_OUTPUT
-          echo "image=$ECR_REGISTRY/${{ vars.ECR_REPOSITORY_NAME }}:$IMAGE_TAG" >> $GITHUB_OUTPUT
-      - name: validation exists lambda function
-        run: |
-          aws lambda get-function --function-name ${{ vars.AWS_LAMBDA_FUNCTION_NAME }} || {
-            echo "Lambda function does not exist, creating it..."
-            aws lambda create-function \
-              --function-name ${{ vars.AWS_LAMBDA_FUNCTION_NAME }} \
-              --package-type Image \
-              --code ImageUri=${{ steps.build-image.outputs.image_uri }} \
-              --role ${{ vars.AWS_LAMBDA_ROLE }} \
-              --timeout 480 \
-              --memory-size 3008
-            
-            echo "Waiting for Lambda function to be active..."
-            aws lambda wait function-active --function-name ${{ vars.AWS_LAMBDA_FUNCTION_NAME }}
-            echo "Lambda function is now active"
-          }
+          IMAGE_DIGEST=$(docker inspect $ECR_REGISTRY/${{ vars.ECR_REPOSITORY_NAME }}-prod:$IMAGE_TAG --format='{{.RepoDigests}}' | sed 's/\[//g' | sed 's/\]//g' | cut -d'@' -f2)
+          echo "image_uri=$ECR_REGISTRY/${{ vars.ECR_REPOSITORY_NAME }}-prod@$IMAGE_DIGEST" >> $GITHUB_OUTPUT
+          echo "image=$ECR_REGISTRY/${{ vars.ECR_REPOSITORY_NAME }}-prod:$IMAGE_TAG" >> $GITHUB_OUTPUT
       - name: update lambda function code
         run: |
           aws lambda update-function-code \
-            --function-name ${{ vars.AWS_LAMBDA_FUNCTION_NAME }} \
+            --function-name ${{ vars.AWS_LAMBDA_FUNCTION_NAME }}-prod \
             --image-uri ${{ steps.build-image.outputs.image_uri }}
 
           echo "Waiting for function code update to complete..."
-          aws lambda wait function-updated --function-name ${{ vars.AWS_LAMBDA_FUNCTION_NAME }}
+          aws lambda wait function-updated --function-name ${{ vars.AWS_LAMBDA_FUNCTION_NAME }}-prod
 
           # Update timeout and memory configuration
           aws lambda update-function-configuration \
-            --function-name ${{ vars.AWS_LAMBDA_FUNCTION_NAME }} \
+            --function-name ${{ vars.AWS_LAMBDA_FUNCTION_NAME }}-prod \
             --timeout 480 \
             --memory-size 3008
