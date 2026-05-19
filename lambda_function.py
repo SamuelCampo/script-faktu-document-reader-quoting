@@ -12,8 +12,7 @@ import requests
 url_notification = None
 
 # --- CONFIGURACIÓN INICIAL (sin cambios) ---
-GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
-genai.configure(api_key=GEMINI_API_KEY)
+
 
 # Configurar cliente S3 con timeouts para evitar loops infinitos
 s3_client = boto3.client('s3', 
@@ -23,6 +22,26 @@ s3_client = boto3.client('s3',
         retries={'max_attempts': 3}  # Máximo 3 reintentos
     )
 )
+ssm_client = boto3.client('ssm', region_name='us-east-1')
+
+def get_secure_key(key_name):
+    try:
+        # Reconstruimos la ruta del parámetro usando el environment
+        env = os.getenv('APP_ENV', 'prod')
+        parameter_name = f"/faktu/{env}/{key_name}"
+        
+        # Pedimos el parámetro exigiendo que nos lo entregue desencriptado
+        response = ssm_client.get_parameter(
+            Name=parameter_name,
+            WithDecryption=True
+        )
+        return response['Parameter']['Value']
+    except Exception as e:
+        print(f"Error al obtener la contraseña de BD: {str(e)}")
+        raise e
+        
+GEMINI_API_KEY = get_secure_key('GEMINI_API_KEY')
+genai.configure(api_key=GEMINI_API_KEY)
 
 def procesar_fechas_factura(invoice_date, due_date):
     """
