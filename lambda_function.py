@@ -26,6 +26,10 @@ ssm_client = boto3.client('ssm', region_name='us-east-1')
 
 def get_secure_key(key_name):
     try:
+
+        if os.getenv('APP_ENV', 'prod') == 'dev':
+            return os.getenv('GEMINI_API_KEY')
+
         # Reconstruimos la ruta del parámetro usando el environment
         env = os.getenv('APP_ENV', 'prod')
         parameter_name = f"/faktu/{env}/{key_name}"
@@ -316,7 +320,7 @@ def handler(event, context):
 
         # 3. PREPARAR Y ENVIAR LA SOLICITUD A GEMINI (sin cambios)
         print("Configurando modelo Gemini...")
-        model = genai.GenerativeModel('gemini-2.5-flash')
+        model = genai.GenerativeModel('gemini-3.1-flash-lite')
         prompt = """
         Eres un asistente experto en analizar facturas chilenas.
         Por favor, analiza el siguiente documento y extrae la siguiente información:
